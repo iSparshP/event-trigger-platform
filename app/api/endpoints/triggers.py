@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from sqlalchemy.orm import Session
 from typing import List
 from croniter import croniter
+from apscheduler.jobstores.base import JobLookupError
 from ...core.database import get_db
 from ...schemas.trigger import TriggerCreate, Trigger
 from ...schemas.event import EventCreate
@@ -193,7 +194,11 @@ async def delete_trigger(
         raise HTTPException(status_code=404, detail="Trigger not found")
     
     if trigger.type == "scheduled":
-        scheduler.remove_job(str(trigger.id))
+        try:
+            scheduler.remove_job(str(trigger.id))
+        except JobLookupError:
+            # Ignore if the job doesn't exist in the scheduler
+            pass
     
     db.delete(trigger)
     db.commit()

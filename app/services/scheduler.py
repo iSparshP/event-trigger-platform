@@ -8,4 +8,20 @@ scheduler = AsyncIOScheduler(
     }
 )
 
-# Remove the automatic scheduler.start()
+def init_scheduler():
+    # Event cleanup jobs
+    scheduler.add_job(
+        'app.services.event_manager:archive_old_events',
+        'interval',
+        minutes=30,
+        id='archive_old_events'
+    )
+    
+    scheduler.add_job(
+        'app.services.event_manager:delete_old_events',
+        'interval',
+        hours=24,
+        id='delete_old_events'
+    )
+    
+    scheduler.start()
