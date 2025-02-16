@@ -239,12 +239,3 @@ docker-compose run --rm app pytest
 3. Commit changes
 4. Push to branch
 5. Create Pull Request
-
-## License
-MIT License
-
-## Author
-[Your Name]
-
-## Support
-For support, email [your-email@example.com]
