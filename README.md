@@ -2,7 +2,7 @@
 
 A robust platform for managing scheduled and API-based event triggers with automatic retention and archival capabilities.
 
-##Architecture
+## Architecture
 
 ![Image](https://github.com/user-attachments/assets/1340ada4-c17e-418d-a6fa-6c03deba30e1)
 
