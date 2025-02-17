@@ -27,12 +27,11 @@ A robust platform for managing scheduled and API-based event triggers with autom
   - Event log visualization
 
 ## Tech Stack
-- **Backend**: Python FastAPI
-- **Database**: PostgreSQL
-- **Caching**: Redis
-- **Documentation**: Swagger/OpenAPI
-- **Containerization**: Docker
-- **UI**: Swagger
+- FastAPI
+- PostgreSQL
+- Redis
+- Docker
+  
 
 ## Local Setup
 
@@ -59,108 +58,102 @@ docker-compose up -d
 ```
 
 4. Access the application:
-- Web UI: http://localhost:8000
 - API Docs: http://localhost:8000/docs
-- Admin Panel: http://localhost:8000/admin
+- Swagger UI: http://localhost:8000/docs
 
 ## API Documentation
 
-### Authentication
-All API endpoints require Basic Authentication
-```bash
-Authorization: Bearer <your_token>
+## Authentication
+### Token Request
+```http
+POST /api/v1/auth/token
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&password=admin
 ```
 
-### 1. Create Scheduled Trigger
-```bash
-POST /api/v1/triggers/scheduled
-Content-Type: application/json
+### Response
+```json
+{
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+    "token_type": "bearer"
+}
+```
 
+## Triggers
+
+### Create Trigger
+```http
+POST /api/v1/triggers
+Content-Type: application/json
+```
+
+#### Scheduled Trigger (One-time)
+```json
 {
     "type": "scheduled",
-    "schedule": {
-        "type": "one_time",  // or "recurring"
-        "time": "2024-02-20T10:00:00Z",
-        "interval_minutes": 30  // required only for recurring
-    },
-    "description": "Daily data sync"
-}
-
-Response:
-{
-    "trigger_id": "12345",
-    "status": "created",
-    "next_execution": "2024-02-20T10:00:00Z"
+    "schedule": "2024-02-20T10:00:00Z",
+    "recurring": false
 }
 ```
 
-### 2. Create API Trigger
-```bash
-POST /api/v1/triggers/api
-Content-Type: application/json
+#### Scheduled Trigger (Recurring)
+```json
+{
+    "type": "scheduled",
+    "recurring": true,
+    "recurring_pattern": "*/30 * *"
+}
+```
 
+#### API Trigger
+```json
 {
     "type": "api",
-    "schema": {
-        "required_fields": ["event_name", "payload"],
-        "validation_rules": {
-            "event_name": "string",
-            "payload": "object"
-        }
-    },
-    "description": "Payment webhook"
-}
-
-Response:
-{
-    "trigger_id": "12346",
-    "status": "created",
-    "endpoint": "/api/v1/triggers/12346/execute"
-}
-```
-
-### 3. Test Trigger
-```bash
-POST /api/v1/triggers/{trigger_id}/test
-Content-Type: application/json
-
-{
-    "payload": {
-        // Trigger specific payload
+    "api_schema": {
+        "required_fields": ["event_name", "payload"]
     }
 }
+```
 
-Response:
+### Test Trigger
+```http
+POST /api/v1/triggers/{trigger_id}/test
+```
+
+#### Response
+```json
 {
-    "test_id": "test_12345",
-    "status": "executed",
-    "timestamp": "2024-02-16T10:22:41Z"
+    "message": "Test trigger executed",
+    "event_id": "uuid-of-event"
 }
 ```
 
-### 4. Get Event Logs
-```bash
-GET /api/v1/events
-Query Parameters:
-- status: active|archived (default: active)
-- aggregate: true|false (default: false)
-- trigger_id: optional filter
+## Events
 
-Response:
+### List Events
+```http
+GET /api/v1/events
+```
+
+#### Query Parameters
+- `status`: active|archived
+- `aggregate`: true|false
+- `hours`: int (default: 48)
+
+#### Response
+```json
 {
     "events": [
         {
-            "event_id": "evt_12345",
-            "trigger_id": "12345",
-            "type": "scheduled",
-            "execution_time": "2024-02-16T10:22:41Z",
-            "status": "success",
+            "id": "uuid",
+            "trigger_id": "trigger-uuid",
+            "status": "active",
+            "triggered_at": "2024-02-16T10:00:00Z",
             "payload": {},
             "is_test": false
         }
-    ],
-    "total_count": 1,
-    "aggregated_count": null  // present when aggregate=true
+    ]
 }
 ```
 
@@ -171,46 +164,19 @@ Response:
 - Events are automatically moved to archived state after 2 hours
 - Archived events are permanently deleted after 46 hours in archived state
 
-## Deployment
-
-### Deployed URL
-[Add your deployment URL here]
-
-### Deployment Instructions
-1. Fork the repository
-2. Set up free tier services:
-   - Heroku/Railway for application hosting
-   - ElephantSQL for PostgreSQL
-   - Redis Labs for Redis cache
-3. Configure environment variables
-4. Deploy using provided Dockerfile
-
-## Cost Estimation (30 days, 5 queries/day)
-- **Compute (Heroku Free Tier)**: $0
-- **Database (ElephantSQL Free Tier)**:
-  - Storage: 20MB included
-  - Connections: 5 concurrent
-  - Cost: $0
-- **Redis Cache (Redis Labs Free Tier)**:
-  - Storage: 30MB included
-  - Connections: 30
-  - Cost: $0
-**Total Monthly Cost**: $0 (Using free tiers)
 
 ## Development
 
 ### Project Structure
 ```
 event-trigger-platform/
-├── api/
-│   ├── routes/
+├── app/
+│   ├── api/
+│   ├── core/
 │   ├── models/
+│   ├── schemas/
 │   └── services/
-├── core/
-│   ├── config.py
-│   └── database.py
 ├── tests/
-├── docker/
 ├── docker-compose.yml
 └── Dockerfile
 ```
