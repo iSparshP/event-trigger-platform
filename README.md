@@ -26,6 +26,16 @@ A robust platform for managing scheduled and API-based event triggers with autom
   - Swagger/OpenAPI documentation
   - Event log visualization
 
+
+## Environment Variables
+
+Required environment variables:
+- `DATABASE_URL`: PostgreSQL connection string
+- `SECRET_KEY`: Secret key for JWT tokens
+- `ENVIRONMENT`: development/production
+- `PORT`: Application port (default: 8000)
+- `REDIS_URL`: Redis connection string (default: redis://redis:6379/0)
+
 ## Tech Stack
 - FastAPI
 - PostgreSQL

@@ -9,6 +9,7 @@ from .services.event_manager import archive_old_events, delete_old_events
 from apscheduler.jobstores.base import ConflictingIdError
 from app.core.config import settings
 from sqlalchemy import create_engine
+from app.api.routers.health import router as health_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -25,6 +26,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(health_router)
 app.include_router(triggers.router, prefix="/api/v1/triggers", tags=["triggers"])
 app.include_router(events.router, prefix="/api/v1/events", tags=["events"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
